@@ -51,7 +51,7 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
     params = [  {'title': 'Grating:', 'name': 'grating', 'type': 'list',
                   'value': 'G1200', 'limits': Spectrometer.gratings},
                 {'title': 'Tau [ms]:', 'name': 'tau', 'type': 'int',
-                 'value': 1000},
+                 'value': 20},
                 # {'title': 'Amplitude:', 'name': 'amplitude', 'type': 'int',
                 #  'value': 1},
                 # {'title': 'Noise:', 'name': 'noise', 'type': 'int',

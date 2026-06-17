@@ -61,6 +61,8 @@ class DAQ_0DViewer_PhotoDiode(DAQ_Viewer_base):
         """
         if param.name() == "grating":
             self.controller.grating = param.value()
+        else:
+            pass
     #        elif ...
         ##
 
@@ -86,6 +88,7 @@ class DAQ_0DViewer_PhotoDiode(DAQ_Viewer_base):
         else:
             self.controller = controller
             initialized = True
+
         self.settings.child('grating').setValue(self.controller.grating)
         # self.dte_signal_temp.emit(DataToExport(name='Photodiode',
         #                                        data=[DataFromPlugins(name='Mono1',

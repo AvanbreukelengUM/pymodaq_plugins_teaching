@@ -59,7 +59,8 @@ class DAQ_1DViewer_Spectrometer(DAQ_Viewer_base):
            self.controller.grating=param.value()
            data_x_axis = self.controller.get_wavelength_axis()  # if possible
            self.x_axis = Axis(data=data_x_axis, label='wavelength', units='nm', index=0)
-#        elif ...
+        else:
+            pass
         ##
 
     def ini_detector(self, controller=None):
@@ -89,12 +90,12 @@ class DAQ_1DViewer_Spectrometer(DAQ_Viewer_base):
         data_x_axis = self.controller.get_wavelength_axis()  # if possible
         self.x_axis = Axis(data=data_x_axis, label='wavelength', units='nm', index=0)
 
-        self.dte_signal_temp.emit(DataToExport(name='Spectrometer',
-                                               data=[DataFromPlugins(name='Spectro1',
-                                                                     data=[np.array([0., 0., ...]),
-                                                                           np.array([0., 0., ...])],
-                                                                     dim='Data1D', labels=['Intensity'],
-                                                                     axes=[self.x_axis])]))
+        # self.dte_signal_temp.emit(DataToExport(name='Spectrometer',
+        #                                        data=[DataFromPlugins(name='Spectro1',
+        #                                                              data=[np.array([0., 0.]),
+        #                                                                    np.array([0., 0.])],
+        #                                                              dim='Data1D', labels=['Intensity'],
+        #                                                              axes=[self.x_axis])]))
 
         info = ""
         return info, initialized
@@ -118,6 +119,8 @@ class DAQ_1DViewer_Spectrometer(DAQ_Viewer_base):
 
         ##synchrone version (blocking function)
         data_tot = self.controller.grab_spectrum()
+        data_x_axis = self.controller.get_wavelength_axis()  # if possible
+        self.x_axis = Axis(data=data_x_axis, label='wavelength', units='nm', index=0)
         self.dte_signal.emit(DataToExport('Spectrum',
                                           data=[DataFromPlugins(name='Spectrum1', data=data_tot,
                                                                 dim='Data1D', labels=['Intensity'],
