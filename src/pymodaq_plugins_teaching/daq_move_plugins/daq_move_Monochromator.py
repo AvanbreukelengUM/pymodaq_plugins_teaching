@@ -6,6 +6,7 @@ from pymodaq.control_modules.move_utility_classes import (DAQ_Move_base, comon_p
 from pymodaq_utils.utils import ThreadCommand  # object used to send info back to the main thread
 from pymodaq_gui.parameter import Parameter
 
+from pymodaq_data.data import Q_
 
 #  Replace the following fake import with the import of the real Python wrapper of your instrument. Here we suppose that
 #  the wrapper is in the hardware directory, but it could come from an external librairy like pylablib or pymeasure.
@@ -50,10 +51,10 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
     data_actuator_type = DataActuatorType.DataActuator  # wether you use the new data style for actuator otherwise set this
     # as  DataActuatorType.float  (or entirely remove the line)
 
-    params = [  {'title': 'Grating:', 'name': 'grat', 'type': 'str',
+    params = [  {'title': 'Grating:', 'name': 'grating', 'type': 'list',
                   'value': 'G1200', 'limits': Spectrometer.gratings},
-                {'title': 'Tau:', 'name': 'Tau', 'type': 'int',
-                 'value': 1},
+                {'title': 'Tau [ms]:', 'name': 'tau', 'type': 'int',
+                 'value': 1000},
                 # {'title': 'Amplitude:', 'name': 'amplitude', 'type': 'int',
                 #  'value': 1},
                 # {'title': 'Noise:', 'name': 'noise', 'type': 'int',
@@ -106,19 +107,11 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
         param: Parameter
             A given parameter (within detector_settings) whose value has been changed by the user
         """
-        ## TODO for your custom plugin
-        if param.name() == 'axis':
-            self.axis_unit = self.controller.your_method_to_get_correct_axis_unit()
-            # do this only if you can and if the units are not known beforehand, for instance
-            # if the motors connected to the controller are of different type (mm, µm, nm, , etc...)
-            # see BrushlessDCMotor from the thorlabs plugin for an exemple
-
-        elif param.name() == "grat":
-           self.controller.self.controller.grating=param.value()
-        elif param.name() == "Tau":
-           self.controller.self.controller.tau = param.value()
-        else:
-            pass
+        if param.name() == "grating":
+           self.controller.grating=param.value()
+        elif param.name() == "tau":
+            tau_q = Q_(param.value(), units='ms')
+            self.controller.tau = tau_q.m_as('s')
 
     def ini_stage(self, controller=None):
         """Actuator communication initialization
@@ -140,8 +133,13 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
         else:
             self.controller = controller
             initialized = True
-        self.controller.grating = self.settings['grat']
-        self.controller.tau = self.settings['Tau']
+        # self.controller.grating = self.settings['grating']
+        # tau_q = Q_(self.settings['tau'], units='ms')
+        # self.controller.tau = tau_q.m_as('s')
+        self.settings.child('grating').setValue(self.controller.grating)
+        self.settings.child('grating').set()
+        self.settings.child('tau').setValue(self.controller.tau*1000)
+
         # self.controller.amplitude(self.settings['amplitude'])
         # self.controller.noise(self.settings['noise'])
         # self.controller.width(self.settings['width'])
@@ -159,9 +157,8 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
         value = self.check_bound(value)  #if user checked bounds, the defined bounds are applied here
         self.target_value = value
         value = self.set_position_with_scaling(value)  # apply scaling if the user specified one
-        ## TODO for your custom plugin
         self.controller.set_wavelength(value.value(self.axis_unit),set_type='abs')  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand('Update_Status', [self.controller.get_wavelength()]))
+        self.emit_status(ThreadCommand('Update_Status', [value]))
 
     def move_rel(self, value: DataActuator):
         """ Move the actuator to the relative target actuator value defined by value
@@ -175,12 +172,10 @@ class DAQ_Move_Monochromator(DAQ_Move_base):
         value = self.set_position_relative_with_scaling(value)
 
         self.controller.set_wavelength(value.value(self.axis_unit),set_type='rel')  # when writing your own plugin replace this line
-        self.emit_status(ThreadCommand('Update_Status', [self.controller.get_wavelength()]))
+        self.emit_status(ThreadCommand('Update_Status', [self.target_value]))
 
     def move_home(self):
         """Call the reference method of the controller"""
-
-        ## TODO for your custom plugin
         self.controller.find_reference()  # when writing your own plugin replace this line
         self.emit_status(ThreadCommand('Update_Status', ['Home:600nm']))
 
