@@ -100,7 +100,7 @@ class CustomExtensionBeamProfiler(CustomExt):
 
     def snap(self):
         if self.daq_viewer is None:
-            self.daq_viewer = self.modules_manager.get_mod_from_name('Camera')
+            self.daq_viewer = self.modules_manager.get_mod_from_name('BSCamera')
             self.daq_viewer.grab_done_signal.connect(self.plot)
         self.daq_viewer.snap()
 
